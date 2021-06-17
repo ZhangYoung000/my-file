@@ -15,6 +15,7 @@ import cn.zyity.zfile.service.StorageConfigService;
 import cn.zyity.zfile.service.SystemConfigService;
 import cn.zyity.zfile.service.base.AbstractBaseFileService;
 import cn.zyity.zfile.service.base.BaseFileService;
+import cn.zyity.zfile.util.FileComparator;
 import cn.zyity.zfile.util.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,7 @@ import java.util.Objects;
  */
 @Service
 @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-public class LocalServiceImpl extends AbstractBaseFileService implements BaseFileService {
+public  class LocalServiceImpl extends AbstractBaseFileService implements BaseFileService {
 
     private static final Logger log = LoggerFactory.getLogger(LocalServiceImpl.class);
 
@@ -78,15 +79,17 @@ public class LocalServiceImpl extends AbstractBaseFileService implements BaseFil
         List<FileItemDTO> fileItemList = new ArrayList<>();
         System.out.println("=========path in fileList========");
         System.out.println(path);
+        if (filePath == null) {
+//            管理员文件列表
+            filePath = systemConfigService.getRootPath();
+        }
         String fullPath = StringUtils.removeDuplicateSeparator(filePath + path);
         System.out.println("=========fullpath in fileList========");
         System.out.println(fullPath);
         File file = new File(fullPath);
-
         if (!file.exists()) {
             throw new FileNotFoundException("文件不存在");
         }
-
         File[] files = file.listFiles();
 
         if (files == null) {
@@ -107,40 +110,17 @@ public class LocalServiceImpl extends AbstractBaseFileService implements BaseFil
 
         return fileItemList;
     }
-    public List<FileItemDTO> fileListAll(String path) throws FileNotFoundException {
-        List<FileItemDTO> fileItemList = new ArrayList<>();
-        System.out.println("=========path in fileListAll========");
-        System.out.println(path);
-//        System.out.println("systemConfigDao:"+systemConfigRepository);
-        String filePath = systemConfigService.getRootPath();
-        String fullPath = StringUtils.removeDuplicateSeparator(filePath + path);
-        System.out.println("=========fullpath in fileListAll========");
-        System.out.println(fullPath);
-        File file = new File(fullPath);
 
-        if (!file.exists()) {
-            throw new FileNotFoundException("文件不存在");
-        }
+    @Override
+    public List<FileItemDTO> fileList(String path,String orderBy,String orderDirection) throws FileNotFoundException{
+        List<FileItemDTO> files = fileList(path);
+        files.sort(new FileComparator(orderBy,orderDirection));
+        return files;
+    }
 
-        File[] files = file.listFiles();
-
-        if (files == null) {
-            return fileItemList;
-        }
-        for (File f : files) {
-            FileItemDTO fileItemDTO = new FileItemDTO();
-            fileItemDTO.setType(f.isDirectory() ? FileTypeEnum.FOLDER : FileTypeEnum.FILE);
-            fileItemDTO.setTime(new Date(f.lastModified()));
-            fileItemDTO.setSize(f.length());
-            fileItemDTO.setName(f.getName());
-            fileItemDTO.setPath(path);
-            if (f.isFile()) {
-                fileItemDTO.setUrl(getDownloadUrl(StringUtils.concatUrl(path, f.getName())));
-            }
-            fileItemList.add(fileItemDTO);
-        }
-
-        return fileItemList;
+    public List<FileItemDTO> fileListAll(String path,String orderBy,String orderDirection) throws FileNotFoundException {
+        List<FileItemDTO> fileItemDTOS = fileList(path,orderBy,orderDirection);
+        return fileItemDTOS;
     }
 
     @Override

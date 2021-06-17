@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -26,6 +27,7 @@ import java.util.Set;
  *
  */
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true,securedEnabled = true,jsr250Enabled = true)
 public class MySecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Resource
@@ -37,18 +39,18 @@ public class MySecurityConfig extends WebSecurityConfigurerAdapter {
                 // .authenticationProvider(authenticationProvider())
                 .exceptionHandling()
                 // 未登录时，进行 json 格式的提示.
-                .authenticationEntryPoint((request, response, authException) -> {
+               /* .authenticationEntryPoint((request, response, authException) -> {
                     response.setContentType("application/json;charset=utf-8");
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     PrintWriter out = response.getWriter();
                     out.write(objectMapper.writeValueAsString(ResultBean.error("未登录")));
                     out.flush();
                     out.close();
-                })
+                })*/
                 .and()
                 .authorizeRequests()
                 .antMatchers("/").permitAll()
-                .antMatchers("/admin/**").authenticated()
+//                .antMatchers("/admin/**").authenticated()
 //                .antMatchers("/2/main/**").authenticated()
                 .and()
                 .formLogin() // 使用自带的登录
@@ -80,9 +82,11 @@ public class MySecurityConfig extends WebSecurityConfigurerAdapter {
                         out.write(objectMapper.writeValueAsString(ResultBean.success("admin")));
 //                        response.sendRedirect(url);
                     } else {
-//                        如果是用户，将驱动id响应
+//                        如果是用户，将driverId存入session
                         String driverId = roles.iterator().next();
-                        System.out.println("driverId:"+driverId);
+                        request.getSession().setAttribute("driverId",driverId);
+//                        System.out.println("driverId:"+driverId);
+//                        TODO:不响应驱动id,修改前端代码，后端从session中获取驱动id代替从前端参数中获取
                         out.write(objectMapper.writeValueAsString(ResultBean.success(driverId)));
 //                        response.sendRedirect(url);
                     }

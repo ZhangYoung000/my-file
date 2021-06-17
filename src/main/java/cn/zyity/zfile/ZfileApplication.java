@@ -1,8 +1,5 @@
 package cn.zyity.zfile;
 
-import cn.hutool.crypto.SecureUtil;
-import cn.hutool.crypto.digest.MD5;
-import cn.zyity.zfile.security.Md5PasswordEncoder;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -18,9 +15,12 @@ import org.springframework.scheduling.annotation.EnableAsync;
 public class ZfileApplication extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
-        SpringApplication.run(ZfileApplication.class, args);
-       /* String s = SecureUtil.md5("123456");
-        System.out.println(s);*/
+        try {
+
+            SpringApplication.run(ZfileApplication.class, args);
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
 
     }
     @Override //为了打包springboot项目

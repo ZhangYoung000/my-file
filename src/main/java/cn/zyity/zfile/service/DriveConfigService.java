@@ -15,7 +15,6 @@ import cn.zyity.zfile.model.entity.StorageConfig;
 import cn.zyity.zfile.model.enums.StorageTypeEnum;
 import cn.zyity.zfile.repository.DriverConfigRepository;
 import cn.zyity.zfile.repository.FilterConfigRepository;
-import cn.zyity.zfile.repository.ShortLinkConfigRepository;
 import cn.zyity.zfile.repository.StorageConfigRepository;
 import cn.zyity.zfile.service.base.AbstractBaseFileService;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -48,9 +48,6 @@ public class DriveConfigService {
     private FilterConfigRepository filterConfigRepository;
 
     @Resource
-    private ShortLinkConfigRepository shortLinkConfigRepository;
-
-    @Resource
     private DriveContext driveContext;
 
     @Resource
@@ -65,7 +62,8 @@ public class DriveConfigService {
      * @return  驱动器列表
      */
     public List<DriveConfig> list() {
-        Sort sort = new Sort(Sort.Direction.ASC,"orderNum");
+        ArrayList<String> list = new ArrayList<>();
+        Sort sort =  Sort.by("orderNum");
         return driverConfigRepository.findAll(sort);
     }
 
@@ -79,7 +77,7 @@ public class DriveConfigService {
         DriveConfig driveConfig = new DriveConfig();
         driveConfig.setEnable(true);
         Example<DriveConfig> example = Example.of(driveConfig);
-        Sort sort = new Sort(Sort.Direction.ASC,"orderNum");
+        Sort sort = Sort.by("orderNum");
         return driverConfigRepository.findAll(example, sort);
     }
 
@@ -272,7 +270,6 @@ public class DriveConfigService {
         driverConfigRepository.updateId(updateId, newId);
         storageConfigRepository.updateDriveId(updateId, newId);
         filterConfigRepository.updateDriveId(updateId, newId);
-        shortLinkConfigRepository.updateUrlDriveId("/directlink/" + updateId, "/directlink/" + newId);
         driveContext.updateDriveId(updateId, newId);
     }
 

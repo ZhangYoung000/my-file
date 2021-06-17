@@ -1,11 +1,12 @@
 package cn.zyity.zfile.model.entity;
 
+import lombok.Data;
 import org.hibernate.annotations.Proxy;
 
 import javax.persistence.*;
 
 @Proxy(lazy = false)
-
+@Data
 @Entity(name = "SYS_USER_ROLE")
 public class SysUserRole {
     @Id

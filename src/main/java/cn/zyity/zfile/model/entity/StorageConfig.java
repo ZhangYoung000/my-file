@@ -40,5 +40,8 @@ public class StorageConfig {
         this.key = key;
         this.title = title;
     }
+    public StorageConfig() {
+
+    }
 
 }

@@ -1,8 +1,9 @@
-package cn.zyity.zfile.controller.home;
+package cn.zyity.zfile.controller.user;
 
 import cn.zyity.zfile.model.support.ResultBean;
 import cn.zyity.zfile.util.AudioUtil;
 import cn.zyity.zfile.util.HttpUtil;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @RequestMapping("/common")
+@Secured("ROLE_USER")
+
 public class FileParseController {
 
     /**

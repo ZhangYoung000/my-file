@@ -1,4 +1,4 @@
-package cn.zyity.zfile.controller.home;
+package cn.zyity.zfile.controller.user;
 
 import cn.hutool.crypto.SecureUtil;
 import cn.zyity.zfile.context.DriveContext;
@@ -6,26 +6,26 @@ import cn.zyity.zfile.model.constant.ZFileConstant;
 import cn.zyity.zfile.model.entity.DriveConfig;
 import cn.zyity.zfile.model.entity.StorageConfig;
 import cn.zyity.zfile.model.entity.SysUser;
+import cn.zyity.zfile.model.entity.SysUserRole;
 import cn.zyity.zfile.model.enums.StorageTypeEnum;
 import cn.zyity.zfile.model.support.ResultBean;
 import cn.zyity.zfile.repository.DriverConfigRepository;
 import cn.zyity.zfile.repository.StorageConfigRepository;
 import cn.zyity.zfile.repository.SysUserReposity;
-import cn.zyity.zfile.security.Md5PasswordEncoder;
 import cn.zyity.zfile.service.SystemConfigService;
 import cn.zyity.zfile.service.impl.LocalServiceImpl;
 import cn.zyity.zfile.util.FileUtil;
 import cn.zyity.zfile.util.StringUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.xml.internal.ws.resources.HttpserverMessages;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.HandlerMapping;
 
 import javax.annotation.Resource;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
@@ -62,37 +62,28 @@ public class LocalController {
     /**
      * 本地存储下载指定文件
      *
-     * @param driveId 驱动器 ID
      * @return 文件
      */
-    @GetMapping("/file/{driveId}/**")
+    @Secured("ROLE_USER")
+    @GetMapping("/file/**")
     @ResponseBody
-    public ResponseEntity<Object> downAttachment(@PathVariable("driveId") Integer driveId, final HttpServletRequest request) {
+    public ResponseEntity<Object> downAttachment( final HttpServletRequest request) throws Exception {
+        Object _userDriveId = request.getSession().getAttribute("driverId");
+        if (_userDriveId == null) {
+            throw new Exception("驱动id空值");
+        }
+        int userDriverId =Integer.parseInt ((String) _userDriveId);
         String path = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
+        System.out.println("path:"+path);
         String bestMatchPattern = (String) request.getAttribute(HandlerMapping.BEST_MATCHING_PATTERN_ATTRIBUTE);
+        System.out.println("bestMatchPattern:"+bestMatchPattern);
         AntPathMatcher apm = new AntPathMatcher();
         String filePath = apm.extractPathWithinPattern(bestMatchPattern, path);
-        LocalServiceImpl localService = (LocalServiceImpl) driveContext.get(driveId);
+        System.out.println("filePath:"+filePath);
+        LocalServiceImpl localService = (LocalServiceImpl) driveContext.get(userDriverId);
         return FileUtil.export(new File(StringUtils.removeDuplicateSeparator(localService.getFilePath() + ZFileConstant.PATH_SEPARATOR + filePath)));
     }
 
-    @GetMapping("/file/download")
-    @ResponseBody
-    public ResultBean  download(String path) {
-        String username = path.split("/")[1];
-        System.out.println("username:"+username);
-        List<SysUser> user = userReposity.findByUsername(username);
-        if (user == null || user.size() == 0) {
-            System.out.println("用户名有误！");
-            return ResultBean.error("用户名有误");
-
-        } else {
-            int driverId = user.get(0).getDriverId();
-            String route =systemConfigService.getSystemConfig().getDomain()+"/file" + path.replaceFirst(username, String.valueOf(driverId));
-            System.out.println("route:"+route);
-            return ResultBean.success(route);
-        }
-    }
 
     @PostMapping("/register")
     @ResponseBody
@@ -140,6 +131,7 @@ public class LocalController {
                 storageConfig.setValue(userDir);
                 storageConfigRepository.save(storageConfig);
 
+//              存储用户
                 SysUser user = new SysUser();
 //                user.setId(0);
                 user.setUsername(username);
@@ -147,7 +139,10 @@ public class LocalController {
                 user.setDriverId(driverId);
                 userReposity.save(user);
                 driveContext.init(driverId);
-
+//              存储用户角色
+                SysUserRole userRole = new SysUserRole();
+                userRole.setUserId(user.getId());
+                userRole.setRoleId(2);
                 out.write(objectMapper.writeValueAsString(ResultBean.success("注册成功！")));
             }
         } catch (IOException e) {
@@ -162,8 +157,14 @@ public class LocalController {
 
     @ResponseBody
     @PostMapping("/update-pwd")
-    public ResultBean updatePsd(String oldPassword, String password,int driverId) {
-        SysUser user = userReposity.findFirstByDriverId(driverId);
+    @Secured("ROLE_USER")
+    public ResultBean updatePsd(HttpServletRequest request,String oldPassword, String password) throws Exception {
+        Object _userDriveId = request.getSession().getAttribute("driverId");
+        if (_userDriveId == null) {
+            throw new Exception("驱动id空值");
+        }
+        int userDriverId =Integer.parseInt ((String) _userDriveId);
+        SysUser user = userReposity.findFirstByDriverId(userDriverId);
         if (user == null) {
             return ResultBean.error("驱动有误！");
         }

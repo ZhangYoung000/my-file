@@ -3,6 +3,7 @@ package cn.zyity.zfile.controller.admin;
 import cn.zyity.zfile.model.dto.CacheInfoDTO;
 import cn.zyity.zfile.model.support.ResultBean;
 import cn.zyity.zfile.service.DriveConfigService;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,6 +18,7 @@ import javax.annotation.Resource;
  */
 @RestController
 @RequestMapping("/admin/cache")
+@Secured("ROLE_ADMIN")
 public class CacheController {
 
     @Resource

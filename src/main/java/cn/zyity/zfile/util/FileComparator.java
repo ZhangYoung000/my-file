@@ -50,8 +50,6 @@ public class FileComparator implements Comparator<FileItemDTO> {
             }
             return "asc".equals(order) ? result : -result;
         }
-        AtomicInteger atomicInteger;
-        atomicInteger.incrementAndGet();
         if (o1Type.equals(FileTypeEnum.FOLDER)) {
             return -1;
         } else {

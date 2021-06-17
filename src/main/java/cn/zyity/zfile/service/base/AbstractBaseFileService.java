@@ -9,6 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.Resource;
+import java.io.FileNotFoundException;
 import java.util.List;
 
 /**
@@ -53,6 +54,8 @@ public abstract class AbstractBaseFileService implements BaseFileService {
      */
     @Override
     public abstract List<FileItemDTO> fileList(String path) throws Exception;
+
+    public abstract List<FileItemDTO> fileList(String path, String orderBy, String orderDirection) throws FileNotFoundException;
 
 
     /**

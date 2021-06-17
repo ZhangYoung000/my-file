@@ -74,9 +74,7 @@ spring:
       hibernate:
         format_sql: false
     show-sql: false
-  resources:
-    chain:
-      gzipped: true
+
   profiles:
     active: prod
   servlet:
