@@ -1,21 +1,3 @@
-# zfile-master
+# my-file
 
-> A Vue.js project
-
-## Build Setup
-
-``` bash
-# install dependencies
-npm install
-
-# serve with hot reload at localhost:8080
-npm run dev
-
-# build for production with minification
-npm run build
-
-# build for production and view the bundle analyzer report
-npm run build --report
-```
-
-For a detailed explanation on how things work, check out the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
+该项目为一个基于SpringBoot + Vue + SpringSecurity的网盘项目，其前端基于开源项目Zfile进行了修改和二次开发。项目实现了面向多用户文件管理的功能。
